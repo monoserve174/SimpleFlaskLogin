@@ -1,0 +1,24 @@
+1. Install Package
+    1. flask
+    2. flask-sqlalchemy
+    3. flask-login
+
+2. Models
+    1. 需繼承 flask-login: UserMixin 將具方法 is_authenticated() 可返回用戶是否登入
+    2. 後續將直接讀取資料庫 id 作為登入傳遞, 若無 id 項會跳出
+    NotImplementedError: No 'id' attribute - override 'get_id'
+    須在資料庫加入下列函數取得編號
+    def get_id(self):
+        return self.user_id # user_id 是看資料庫項目名稱而定
+
+3. 需添加登錄帳號驗證路由如下, 回傳值需若為空需要 None.
+   @login_manager.user_loader
+   def user_loader(uid):
+        return User.query.get(uid)
+
+4. 登錄路由設定
+   驗證帳密無誤後, 從 flask_login 引入 login_user,
+   利用 login_user(<user>) 將此用戶設為當前登入狀態。
+   由於用戶可以能直接使用其他需登入路由進入網頁，因此登入完畢後需轉回原網頁，可利用下方方式跳轉
+        next_url = request.values.get('next')
+   return redirect(next_url or url_for('index'))
